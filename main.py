@@ -47,6 +47,9 @@ def fetch_physical_orders_last_month():
                 currencyCode
               }}
             }}
+            shippingAddress {{
+              country
+            }}
           }}
         }}
       }}
@@ -83,10 +86,29 @@ def send_email_report(orders):
         body = "No physical orders this month."
     else:
         lines = ["Physical orders this month:", ""]
+        total_eur = 0.0
+        total_fee = 0.0
+
         for o in orders:
-            lines.append(
-                f"- {o['name']} | {o['createdAt']} | {o['totalPriceSet']['shopMoney']['amount']} {o['totalPriceSet']['shopMoney']['currencyCode']}"
-            )
+            amount = float(o["totalPriceSet"]["shopMoney"]["amount"])
+            currency = o["totalPriceSet"]["shopMoney"]["currencyCode"]
+            date_only = o["createdAt"][:10]
+
+            # If shippingAddress is added in future queries, fallback placeholder now.
+            country = o.get("shippingAddress", {}).get("country") if o.get("shippingAddress") else "Unknown"
+
+            fee = amount * 0.03
+            total_eur += amount
+            total_fee += fee
+
+            lines.append(f"- {o['name']} | {date_only} | {amount:.2f} {currency}")
+            lines.append(f"  Country: {country}")
+            lines.append(f"  → 3% fee: {fee:.2f} EUR")
+            lines.append("")
+
+        lines.append(f"Total: {total_eur:.2f} EUR")
+        lines.append(f"Total 3% fee: {total_fee:.2f} EUR")
+
         body = "\n".join(lines)
 
     message = Mail(
