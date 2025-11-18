@@ -77,7 +77,7 @@ def send_email_report(orders):
     prev_month = (datetime.utcnow().replace(day=1) - timedelta(days=1))
     month_name = prev_month.strftime("%B")
     year = prev_month.strftime("%Y")
-    subject = f"Shopify Monthly Report – {month_name} {year}"
+    subject = f"Shopify Monthly Report – {month_name} {year} – {len(orders)} physical orders"
 
     if not orders:
         body = "No physical orders this month."
